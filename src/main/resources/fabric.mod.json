@@ -15,9 +15,10 @@
     ]
   },
   "contact": {
-    "homepage": "https://minecraft.curseforge.com/projects/modmenu",
-    "sources": "https://github.com/Prospector/ModMenu",
-    "issues": "https://github.com/Prospector/ModMenu/issues"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/modmenu",
+    "sources": "https://github.com/TerraformersMC/ModMenu",
+    "issues": "https://github.com/TerraformersMC/ModMenu/issues",
+    "discord": "https://discord.gg/jEGF5fb"
   },
   "depends": {
     "fabric-resource-loader-v0": "*",

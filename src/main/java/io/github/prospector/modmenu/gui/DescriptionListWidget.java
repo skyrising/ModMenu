@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.prospector.modmenu.util.HardcodedUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.ConfirmChatLinkScreen;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
@@ -12,7 +13,13 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.Map;
 
 public class DescriptionListWidget extends EntryListWidget<DescriptionListWidget.DescriptionEntry> {
 
@@ -53,9 +60,23 @@ public class DescriptionListWidget extends EntryListWidget<DescriptionListWidget
 			if (description.isEmpty() && HardcodedUtil.getHardcodedDescriptions().containsKey(id)) {
 				description = HardcodedUtil.getHardcodedDescription(id);
 			}
-			if (lastSelected != null && description != null && !description.isEmpty()) {
-				for (OrderedText line : textRenderer.wrapLines(new LiteralText(description.replaceAll("\n", "\n\n")), getRowWidth() - 5)) {
-					children().add(new DescriptionEntry(line, this));
+			if (lastSelected != null) {
+				if (description != null && !description.isEmpty()) {
+					for (OrderedText line : textRenderer.wrapLines(new LiteralText(description.replaceAll("\n", "\n\n")), getRowWidth() - 5)) {
+						children().add(new DescriptionEntry(line, this));
+					}
+				}
+				Map<String, String> contact = lastSelected.getMetadata().getContact().asMap();
+				if (!contact.isEmpty()) {
+					children().add(new DescriptionEntry(new LiteralText("").asOrderedText(), this));
+					children().add(new DescriptionEntry(new TranslatableText("modmenu.links").asOrderedText(), this));
+					contact.forEach((key, value) -> {
+						if (key.equals("sources")) {
+							children().add(new LinkEntry(new TranslatableText("modmenu.sources").asOrderedText(), value, this));
+						} else if (key.equals("discord")) {
+							children().add(new LinkEntry(new TranslatableText("modmenu.discord").asOrderedText(), value, this));
+						}
+					});
 				}
 			}
 		}
@@ -131,7 +152,7 @@ public class DescriptionListWidget extends EntryListWidget<DescriptionListWidget
 	}
 
 	protected class DescriptionEntry extends EntryListWidget.Entry<DescriptionEntry> {
-		private final DescriptionListWidget widget;
+		protected final DescriptionListWidget widget;
 		protected OrderedText text;
 
 		public DescriptionEntry(OrderedText text, DescriptionListWidget widget) {
@@ -145,6 +166,41 @@ public class DescriptionListWidget extends EntryListWidget<DescriptionListWidget
 				return;
 			}
 			textRenderer.drawWithShadow(matrices, text, x, y, 0xAAAAAA);
+		}
+	}
+
+	protected class LinkEntry extends DescriptionEntry {
+		protected Text url;
+
+		public LinkEntry(OrderedText text, String url, DescriptionListWidget widget) {
+			super(text, widget);
+			this.text = text;
+			this.url = new LiteralText(url).formatted(Formatting.BLUE, Formatting.UNDERLINE);
+		}
+
+		@Override
+		public void render(MatrixStack matrices, int index, int y, int x, int itemWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+			x += textRenderer.getWidth("\t");
+			if (widget.top > y || widget.bottom - textRenderer.fontHeight < y) {
+				return;
+			}
+			textRenderer.drawWithShadow(matrices, text, x, y, 0xAAAAAA);
+			textRenderer.drawWithShadow(matrices, url, x + textRenderer.getWidth(text), y, 0x5555FF);
+		}
+
+		@Override
+		public boolean mouseClicked(double mouseX, double mouseY, int button) {
+			int minX = textRenderer.getWidth(text);
+			int maxX = minX + textRenderer.getWidth(url);
+			if (mouseX > minX && mouseX < maxX && mouseY > 0 && mouseY < itemHeight) {
+				client.openScreen(new ConfirmChatLinkScreen(bool -> {
+					if (bool) {
+						Util.getOperatingSystem().open(url.asString());
+					}
+					client.openScreen(parent);
+				}, url.asString(), false));
+			}
+			return false;
 		}
 	}
 

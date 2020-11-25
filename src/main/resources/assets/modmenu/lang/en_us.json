@@ -34,5 +34,8 @@
   "modmenu.dropSuccessful.line1" : "Successfully copied mods",
   "modmenu.dropSuccessful.line2" : "Restart game to load mods",
   "modmenu.dropInfo.1": "Drag and drop files into",
-  "modmenu.dropInfo.2": "this window to add mods"
+  "modmenu.dropInfo.2": "this window to add mods",
+  "modmenu.links": "Links:",
+  "modmenu.discord": "Discord: ",
+  "modmenu.sources": "Source Code: "
 }
