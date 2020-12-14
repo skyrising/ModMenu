@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import io.github.prospector.modmenu.api.ModMenuApi;
 import io.github.prospector.modmenu.config.ModMenuConfigManager;
+import io.github.prospector.modmenu.event.ModMenuEventHandler;
 import io.github.prospector.modmenu.util.HardcodedUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -138,6 +139,7 @@ public class ModMenu implements ClientModInitializer {
 				ALL_NONLIB_MODS.add(id);
 			}
 		}
+		ModMenuEventHandler.register();
 	}
 
 	public static String getDisplayedModCount() {
