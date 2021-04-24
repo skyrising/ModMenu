@@ -1,6 +1,6 @@
 package com.terraformersmc.modmenu.gui.widget.entries;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.terraformersmc.modmenu.ModMenu;
 import com.terraformersmc.modmenu.config.ModMenuConfig;
 import com.terraformersmc.modmenu.gui.widget.ModListWidget;
@@ -8,11 +8,7 @@ import com.terraformersmc.modmenu.util.mod.Mod;
 import com.terraformersmc.modmenu.util.mod.ModSearch;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,13 +27,13 @@ public class ParentEntry extends ModListEntry {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-		super.render(matrices, index, y, x, rowWidth, rowHeight, mouseX, mouseY, isSelected, delta);
+	public void render(int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+		super.render(index, y, x, rowWidth, rowHeight, mouseX, mouseY, isSelected, delta);
 		TextRenderer font = client.textRenderer;
-		int childrenBadgeHeight = font.fontHeight;
-		int childrenBadgeWidth = font.fontHeight;
+		int childrenBadgeHeight = font.lineHeight;
+		int childrenBadgeWidth = font.lineHeight;
 		int shownChildren = ModSearch.search(list.getParent(), list.getParent().getSearchInput(), getChildren()).size();
-		Text str = shownChildren == children.size() ? new LiteralText(String.valueOf(shownChildren)) : new LiteralText(shownChildren + "/" + children.size());
+		String str = shownChildren == children.size() ? String.valueOf(shownChildren) : shownChildren + "/" + children.size();
 		int childrenWidth = font.getWidth(str) - 1;
 		if (childrenBadgeWidth < childrenWidth + 4) {
 			childrenBadgeWidth = childrenWidth + 4;
@@ -47,25 +43,25 @@ public class ParentEntry extends ModListEntry {
 		int childrenBadgeY = y + iconSize - childrenBadgeHeight;
 		int childrenOutlineColor = 0xff107454;
 		int childrenFillColor = 0xff093929;
-		DrawableHelper.fill(matrices, childrenBadgeX + 1, childrenBadgeY, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + 1, childrenOutlineColor);
-		DrawableHelper.fill(matrices, childrenBadgeX, childrenBadgeY + 1, childrenBadgeX + 1, childrenBadgeY + childrenBadgeHeight - 1, childrenOutlineColor);
-		DrawableHelper.fill(matrices, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + 1, childrenBadgeX + childrenBadgeWidth, childrenBadgeY + childrenBadgeHeight - 1, childrenOutlineColor);
-		DrawableHelper.fill(matrices, childrenBadgeX + 1, childrenBadgeY + 1, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + childrenBadgeHeight - 1, childrenFillColor);
-		DrawableHelper.fill(matrices, childrenBadgeX + 1, childrenBadgeY + childrenBadgeHeight - 1, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + childrenBadgeHeight, childrenOutlineColor);
-		font.draw(matrices, str.asOrderedText(), childrenBadgeX + (float) childrenBadgeWidth / 2 - (float) childrenWidth / 2, childrenBadgeY + 1, 0xCACACA);
+		DrawableHelper.fill(childrenBadgeX + 1, childrenBadgeY, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + 1, childrenOutlineColor);
+		DrawableHelper.fill(childrenBadgeX, childrenBadgeY + 1, childrenBadgeX + 1, childrenBadgeY + childrenBadgeHeight - 1, childrenOutlineColor);
+		DrawableHelper.fill(childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + 1, childrenBadgeX + childrenBadgeWidth, childrenBadgeY + childrenBadgeHeight - 1, childrenOutlineColor);
+		DrawableHelper.fill(childrenBadgeX + 1, childrenBadgeY + 1, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + childrenBadgeHeight - 1, childrenFillColor);
+		DrawableHelper.fill(childrenBadgeX + 1, childrenBadgeY + childrenBadgeHeight - 1, childrenBadgeX + childrenBadgeWidth - 1, childrenBadgeY + childrenBadgeHeight, childrenOutlineColor);
+		font.draw(str, childrenBadgeX + (float) childrenBadgeWidth / 2 - (float) childrenWidth / 2, childrenBadgeY + 1, 0xCACACA, false);
 		this.hoveringIcon = mouseX >= x - 1 && mouseX <= x - 1 + iconSize && mouseY >= y - 1 && mouseY <= y - 1 + iconSize;
 		if (isMouseOver(mouseX, mouseY)) {
-			DrawableHelper.fill(matrices, x, y, x + iconSize, y + iconSize, 0xA0909090);
+			DrawableHelper.fill(x, y, x + iconSize, y + iconSize, 0xA0909090);
 			this.client.getTextureManager().bindTexture(PARENT_MOD_TEXTURE);
 			int xOffset = list.getParent().showModChildren.contains(getMod().getId()) ? iconSize : 0;
 			int yOffset = hoveringIcon ? iconSize : 0;
-			RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-			DrawableHelper.drawTexture(matrices, x, y, xOffset, yOffset, iconSize + xOffset, iconSize + yOffset, ModMenuConfig.COMPACT_LIST.getValue() ? (int) (256 / (FULL_ICON_SIZE / (double) COMPACT_ICON_SIZE)) : 256, ModMenuConfig.COMPACT_LIST.getValue() ? (int) (256 / (FULL_ICON_SIZE / (double) COMPACT_ICON_SIZE)) : 256);
+			GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+			DrawableHelper.drawTexture(x, y, xOffset, yOffset, iconSize + xOffset, iconSize + yOffset, ModMenuConfig.COMPACT_LIST.getValue() ? (int) (256 / (FULL_ICON_SIZE / (double) COMPACT_ICON_SIZE)) : 256, ModMenuConfig.COMPACT_LIST.getValue() ? (int) (256 / (FULL_ICON_SIZE / (double) COMPACT_ICON_SIZE)) : 256);
 		}
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int i) {
+	public boolean mouseClicked(int i, int mouseX, int mouseY, int button, int j, int k) {
 		if (hoveringIcon) {
 			String id = getMod().getId();
 			if (list.getParent().showModChildren.contains(id)) {
@@ -75,12 +71,12 @@ public class ParentEntry extends ModListEntry {
 			}
 			list.filter(list.getParent().getSearchInput(), false);
 		}
-		return super.mouseClicked(mouseX, mouseY, i);
+		return super.mouseClicked(i, mouseX, mouseY, button, j, k);
 	}
-
+/*
 	@Override
 	public boolean keyPressed(int int_1, int int_2, int int_3) {
-		if (int_1 == GLFW.GLFW_KEY_ENTER) {
+		if (int_1 == Keyboard.KEY_RETURN) {
 			String id = getMod().getId();
 			if (list.getParent().showModChildren.contains(id)) {
 				list.getParent().showModChildren.remove(id);
@@ -92,7 +88,7 @@ public class ParentEntry extends ModListEntry {
 		}
 		return super.keyPressed(int_1, int_2, int_3);
 	}
-
+*/
 	public void setChildren(List<Mod> children) {
 		this.children = children;
 	}
@@ -109,8 +105,7 @@ public class ParentEntry extends ModListEntry {
 		return children;
 	}
 
-	@Override
-	public boolean isMouseOver(double double_1, double double_2) {
-		return Objects.equals(this.list.getEntryAtPos(double_1, double_2), this);
+	public boolean isMouseOver(int mouseX, int mouseY) {
+		return Objects.equals(this.list.getEntryAtPos(mouseX, mouseY), this);
 	}
 }

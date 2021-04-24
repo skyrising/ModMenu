@@ -2,10 +2,11 @@ package com.terraformersmc.modmenu.config;
 
 import com.google.gson.annotations.SerializedName;
 import com.terraformersmc.modmenu.config.option.BooleanConfigOption;
+import com.terraformersmc.modmenu.config.option.ConfigOption;
 import com.terraformersmc.modmenu.config.option.EnumConfigOption;
 import com.terraformersmc.modmenu.config.option.StringSetConfigOption;
 import com.terraformersmc.modmenu.util.mod.Mod;
-import net.minecraft.client.options.Option;
+import net.minecraft.client.options.GameOptions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -33,18 +34,19 @@ public class ModMenuConfig {
 	public static final BooleanConfigOption HIDE_CONFIG_BUTTONS = new BooleanConfigOption("hide_config_buttons", false);
 	public static final StringSetConfigOption HIDDEN_MODS = new StringSetConfigOption("hidden_mods", new HashSet<>());
 
-	public static Option[] asOptions() {
-		ArrayList<Option> options = new ArrayList<>();
+	public static final ConfigOption[] OPTIONS = asOptions();
+	private static ConfigOption[] asOptions() {
+		ArrayList<ConfigOption> options = new ArrayList<>();
 		for (Field field : ModMenuConfig.class.getDeclaredFields()) {
-			if (Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()) && Option.class.isAssignableFrom(field.getType()) && !field.getName().equals("HIDE_CONFIG_BUTTONS") && !field.getName().equals("MODIFY_TITLE_SCREEN") && !field.getName().equals("MODIFY_GAME_MENU")) {
+			if (Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()) && ConfigOption.class.isAssignableFrom(field.getType()) && !field.getName().equals("HIDE_CONFIG_BUTTONS") && !field.getName().equals("MODIFY_TITLE_SCREEN") && !field.getName().equals("MODIFY_GAME_MENU")) {
 				try {
-					options.add((Option) field.get(null));
+					options.add((ConfigOption) field.get(null));
 				} catch (IllegalAccessException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-		return options.stream().toArray(Option[]::new);
+		return options.stream().toArray(ConfigOption[]::new);
 	}
 
 	public enum Sorting {

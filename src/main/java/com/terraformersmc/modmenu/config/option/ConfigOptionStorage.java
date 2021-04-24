@@ -1,8 +1,9 @@
 package com.terraformersmc.modmenu.config.option;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
+import java.util.*;
 
 public class ConfigOptionStorage {
 	private static final Map<String, Boolean> BOOLEAN_OPTIONS = new HashMap<>();

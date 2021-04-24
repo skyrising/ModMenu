@@ -1,6 +1,6 @@
 package com.terraformersmc.modmenu.gui.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.terraformersmc.modmenu.ModMenu;
 import com.terraformersmc.modmenu.config.ModMenuConfig;
 import com.terraformersmc.modmenu.gui.ModsScreen;
@@ -16,22 +16,21 @@ import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> implements AutoCloseable {
+public class ModListWidget extends AlwaysSelectedEntryListWidget {
 	private static final Logger LOGGER = LogManager.getLogger();
 	public static final boolean DEBUG = Boolean.getBoolean("modmenu.debug");
 
 	private final ModsScreen parent;
+	private final List<ModListEntry> entries = new ArrayList<>();
+	private ModListEntry selected;
 	private List<Mod> mods = null;
 	private final Set<Mod> addedMods = new HashSet<>();
 	private String selectedModId = null;
@@ -48,9 +47,9 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 		setScrollAmount(parent.getScrollPercent() * Math.max(0, this.getMaxPosition() - (this.bottom - this.top - 4)));
 	}
 
-	@Override
 	public void setScrollAmount(double amount) {
-		super.setScrollAmount(amount);
+		scrollAmount = (float) amount;
+		clampScrollAmount();
 		int denominator = Math.max(0, this.getMaxPosition() - (this.bottom - this.top - 4));
 		if (denominator <= 0) {
 			parent.updateScrollPercent(0);
@@ -59,55 +58,41 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 		}
 	}
 
-	@Override
 	protected boolean isFocused() {
-		return parent.getFocused() == this;
+		return false; //return parent.getFocused() == this;
 	}
 
 	public void select(ModListEntry entry) {
 		this.setSelected(entry);
-		if (entry != null) {
-			Mod mod = entry.getMod();
-			NarratorManager.INSTANCE.narrate(new TranslatableText("narrator.select", mod.getName()).getString());
-		}
 	}
 
-	@Override
 	public void setSelected(ModListEntry entry) {
-		super.setSelected(entry);
+		selected = entry;
 		selectedModId = entry.getMod().getId();
-		parent.updateSelectedEntry(getSelected());
+		parent.updateSelectedEntry(entry);
 	}
 
-	@Override
 	protected boolean isSelectedItem(int index) {
-		ModListEntry selected = getSelected();
-		return selected != null && selected.getMod().getId().equals(getEntry(index).getMod().getId());
+		return selected != null && selected.getMod().getId().equals(entries.get(index).getMod().getId());
 	}
 
-	@Override
-	public int addEntry(ModListEntry entry) {
-		if (addedMods.contains(entry.mod)) {
-			return 0;
-		}
+	public void addEntry(ModListEntry entry) {
+		if (addedMods.contains(entry.mod)) return;
 		addedMods.add(entry.mod);
-		int i = super.addEntry(entry);
+		entries.add(entry);
 		if (entry.getMod().getId().equals(selectedModId)) {
 			setSelected(entry);
 		}
-		return i;
 	}
 
-	@Override
 	protected boolean removeEntry(ModListEntry entry) {
 		addedMods.remove(entry.mod);
-		return super.removeEntry(entry);
+		return entries.remove(entry);
 	}
 
-	@Override
 	protected ModListEntry remove(int index) {
-		addedMods.remove(getEntry(index).mod);
-		return super.remove(index);
+		addedMods.remove(entries.get(index).mod);
+		return entries.remove(index);
 	}
 
 	public void reloadFilters() {
@@ -120,7 +105,7 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 	}
 
 	private void filter(String searchTerm, boolean refresh, boolean search) {
-		this.clearEntries();
+		entries.clear();
 		addedMods.clear();
 		Collection<Mod> mods = ModMenu.MODS.values().stream().filter(mod -> !ModMenuConfig.HIDDEN_MODS.getValue().contains(mod.getId())).collect(Collectors.toSet());
 
@@ -166,15 +151,15 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 			}
 		}
 
-		if (parent.getSelectedEntry() != null && !children().isEmpty() || this.getSelected() != null && getSelected().getMod() != parent.getSelectedEntry().getMod()) {
-			for (ModListEntry entry : children()) {
+		if (parent.getSelectedEntry() != null && !entries.isEmpty() || this.selected != null && selected.getMod() != parent.getSelectedEntry().getMod()) {
+			for (ModListEntry entry : entries) {
 				if (entry.getMod().equals(parent.getSelectedEntry().getMod())) {
 					setSelected(entry);
 				}
 			}
 		} else {
-			if (getSelected() == null && !children().isEmpty() && getEntry(0) != null) {
-				setSelected(getEntry(0));
+			if (selected == null && !entries.isEmpty() && getEntry(0) != null) {
+				setSelected(entries.get(0));
 			}
 		}
 
@@ -185,7 +170,7 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 
 
 	@Override
-	protected void renderList(MatrixStack matrices, int x, int y, int mouseX, int mouseY, float delta) {
+	protected void renderList(int x, int y, int mouseX, int mouseY, float delta) {
 		int itemCount = this.getItemCount();
 		Tessellator tessellator_1 = Tessellator.getInstance();
 		BufferBuilder buffer = tessellator_1.getBuffer();
@@ -195,71 +180,63 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 			int entryBottom = this.getRowTop(index) + this.itemHeight;
 			if (entryBottom >= this.top && entryTop <= this.bottom) {
 				int entryHeight = this.itemHeight - 4;
-				ModListEntry entry = this.getEntry(index);
+				ModListEntry entry = entries.get(index);
 				int rowWidth = this.getRowWidth();
 				int entryLeft;
 				if (this.isSelectedItem(index)) {
 					entryLeft = getRowLeft() - 2 + entry.getXOffset();
 					int selectionRight = x + rowWidth + 2;
-					RenderSystem.disableTexture();
+					GlStateManager.disableTexture();
 					float float_2 = this.isFocused() ? 1.0F : 0.5F;
-					RenderSystem.color4f(float_2, float_2, float_2, 1.0F);
-					Matrix4f matrix = matrices.peek().getModel();
+					GlStateManager.color4f(float_2, float_2, float_2, 1.0F);
 					buffer.begin(7, VertexFormats.POSITION);
-					buffer.vertex(matrix, entryLeft, entryTop + entryHeight + 2, 0.0F).next();
-					buffer.vertex(matrix, selectionRight, entryTop + entryHeight + 2, 0.0F).next();
-					buffer.vertex(matrix, selectionRight, entryTop - 2, 0.0F).next();
-					buffer.vertex(matrix, entryLeft, entryTop - 2, 0.0F).next();
+					buffer.vertex(entryLeft, entryTop + entryHeight + 2, 0.0F).next();
+					buffer.vertex(selectionRight, entryTop + entryHeight + 2, 0.0F).next();
+					buffer.vertex(selectionRight, entryTop - 2, 0.0F).next();
+					buffer.vertex(entryLeft, entryTop - 2, 0.0F).next();
 					tessellator_1.draw();
-					RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
+					GlStateManager.color4f(0.0F, 0.0F, 0.0F, 1.0F);
 					buffer.begin(7, VertexFormats.POSITION);
-					buffer.vertex(matrix, entryLeft + 1, entryTop + entryHeight + 1, 0.0F).next();
-					buffer.vertex(matrix, selectionRight - 1, entryTop + entryHeight + 1, 0.0F).next();
-					buffer.vertex(matrix, selectionRight - 1, entryTop - 1, 0.0F).next();
-					buffer.vertex(matrix, entryLeft + 1, entryTop - 1, 0.0F).next();
+					buffer.vertex(entryLeft + 1, entryTop + entryHeight + 1, 0.0F).next();
+					buffer.vertex(selectionRight - 1, entryTop + entryHeight + 1, 0.0F).next();
+					buffer.vertex(selectionRight - 1, entryTop - 1, 0.0F).next();
+					buffer.vertex(entryLeft + 1, entryTop - 1, 0.0F).next();
 					tessellator_1.draw();
-					RenderSystem.enableTexture();
+					GlStateManager.enableTexture();
 				}
 
 				entryLeft = this.getRowLeft();
-				entry.render(matrices, index, entryTop, entryLeft, rowWidth, entryHeight, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPos(mouseX, mouseY), entry), delta);
+				entry.render(index, entryTop, entryLeft, rowWidth, entryHeight, mouseX, mouseY, this.isMouseOver(mouseX, mouseY) && Objects.equals(this.getEntryAtPos(mouseX, mouseY), entry), delta);
 			}
 		}
 
 	}
 
-	@Override
-	protected void updateScrollingState(double double_1, double double_2, int int_1) {
-		super.updateScrollingState(double_1, double_2, int_1);
-		this.scrolling = int_1 == 0 && double_1 >= (double) this.getScrollbarPositionX() && double_1 < (double) (this.getScrollbarPositionX() + 6);
+	protected void updateScrollingState(int mouseX, int mouseY, int button) {
+		this.scrolling = button == 0 && mouseX >= (double) this.getScrollbarPositionX() && mouseX < (double) (this.getScrollbarPositionX() + 6);
 	}
 
 	@Override
-	public boolean mouseClicked(double double_1, double double_2, int int_1) {
-		this.updateScrollingState(double_1, double_2, int_1);
-		if (!this.isMouseOver(double_1, double_2)) {
-			return false;
-		} else {
-			ModListEntry entry = this.getEntryAtPos(double_1, double_2);
-			if (entry != null) {
-				if (entry.mouseClicked(double_1, double_2, int_1)) {
-					this.setFocused(entry);
-					this.setDragging(true);
-					return true;
-				}
-			} else if (int_1 == 0) {
-				this.clickedHeader((int) (double_1 - (double) (this.left + this.width / 2 - this.getRowWidth() / 2)), (int) (double_2 - (double) this.top) + (int) this.getScrollAmount() - 4);
-				return true;
-			}
-
-			return this.scrolling;
-		}
+	public boolean mouseClicked(int mouseX, int mouseY, int button) {
+		this.updateScrollingState(mouseX, mouseY, button);
+		if (!this.isMouseOver(mouseX, mouseY)) return false;
+		if (super.mouseClicked(mouseX, mouseY, button)) return true;
+		return this.scrolling;
 	}
 
-	public final ModListEntry getEntryAtPos(double x, double y) {
-		int int_5 = MathHelper.floor(y - (double) this.top) - this.headerHeight + (int) this.getScrollAmount() - 4;
+	public boolean isMouseOver(int mouseX, int mouseY) {
+		return mouseY >= this.top && mouseY <= this.bottom && getRowLeft() <= mouseX && getRowLeft() + getRowWidth() > mouseX;
+	}
+
+	@Override
+	public Entry getEntry(int index) {
+		return entries.get(index);
+	}
+
+	public final ModListEntry getEntryAtPos(int x, int y) {
+		int int_5 = MathHelper.floor(y - (double) this.top) - this.headerHeight + this.getScrollAmount() - 4;
 		int index = int_5 / this.itemHeight;
-		return x < (double) this.getScrollbarPositionX() && x >= (double) getRowLeft() && x <= (double) (getRowLeft() + getRowWidth()) && index >= 0 && int_5 >= 0 && index < this.getItemCount() ? this.children().get(index) : null;
+		return x < this.getScrollbarPositionX() && x >= getRowLeft() && x <= (getRowLeft() + getRowWidth()) && index >= 0 && int_5 >= 0 && index < this.getItemCount() ? entries.get(index) : null;
 	}
 
 	@Override
@@ -272,9 +249,12 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 		return this.width - (Math.max(0, this.getMaxPosition() - (this.bottom - this.top - 4)) > 0 ? 18 : 12);
 	}
 
-	@Override
 	public int getRowLeft() {
 		return left + 6;
+	}
+
+	protected int getRowTop(int index) {
+		return this.top + 4 - this.getScrollAmount() + index * this.itemHeight + this.headerHeight;
 	}
 
 	public int getWidth() {
@@ -290,23 +270,23 @@ public class ModListWidget extends AlwaysSelectedEntryListWidget<ModListEntry> i
 	}
 
 	@Override
+	protected int getItemCount() {
+		return entries.size();
+	}
+
+	@Override
 	protected int getMaxPosition() {
 		return super.getMaxPosition() + 4;
 	}
 
 	public int getDisplayedCountFor(Set<String> set) {
 		int count = 0;
-		for (ModListEntry c : children()) {
+		for (ModListEntry c : entries) {
 			if (set.contains(c.getMod().getId())) {
 				count++;
 			}
 		}
 		return count;
-	}
-
-	@Override
-	public void close() {
-		iconHandler.close();
 	}
 
 	public ModIconHandler getIconHandler() {

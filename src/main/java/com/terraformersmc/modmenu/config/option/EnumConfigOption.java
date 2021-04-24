@@ -1,20 +1,16 @@
 package com.terraformersmc.modmenu.config.option;
 
 import com.terraformersmc.modmenu.util.TranslationUtil;
-import net.minecraft.client.options.CyclingOption;
-import net.minecraft.client.options.GameOptions;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.client.resource.language.I18n;
 
 import java.util.Locale;
 
-public class EnumConfigOption<E extends Enum<E>> extends CyclingOption {
+public class EnumConfigOption<E extends Enum<E>> implements ConfigOption {
 	private final String key, translationKey;
 	private final Class<E> enumClass;
 	private final E defaultValue;
 
 	public EnumConfigOption(String key, E defaultValue) {
-		super(key, (ignored, amount) -> ConfigOptionStorage.cycleEnum(key, defaultValue.getDeclaringClass()), null);
 		ConfigOptionStorage.setEnum(key, defaultValue);
 		this.key = key;
 		this.translationKey = TranslationUtil.translationKeyOf("option", key);
@@ -22,6 +18,7 @@ public class EnumConfigOption<E extends Enum<E>> extends CyclingOption {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
@@ -43,8 +40,8 @@ public class EnumConfigOption<E extends Enum<E>> extends CyclingOption {
 	}
 
 	@Override
-	public Text getMessage(GameOptions options) {
-		return new TranslatableText(translationKey, new TranslatableText(translationKey + "." + ConfigOptionStorage.getEnum(key, enumClass).name().toLowerCase(Locale.ROOT)));
+	public String getDisplayString() {
+		return I18n.translate(translationKey, I18n.translate(translationKey + "." + ConfigOptionStorage.getEnum(key, enumClass).name().toLowerCase(Locale.ROOT)));
 	}
 
 	public E getDefaultValue() {

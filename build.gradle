@@ -4,17 +4,28 @@ plugins {
 
 apply from: 'https://raw.githubusercontent.com/TerraformersMC/GradleScripts/2.0/ferry.gradle'
 
+
+minecraft {
+	intermediaryUrl = { version ->
+		return "https://maven.legacyfabric.net/net/fabricmc/intermediary/${version}/intermediary-${version}-v2.jar";
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:$project.minecraft_version"
 	mappings "net.fabricmc:yarn:$project.yarn_mappings:v2"
 
 	mod "fabric-loader", "net.fabricmc:fabric-loader:$project.loader_version"
-    includeMod "fabric-api", fabricApi.module("fabric-api-base", project.fabric_version)
-    includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
-    includeMod "fabric-api", fabricApi.module("fabric-screen-api-v1", project.fabric_version)
+    //includeMod "fabric-api", fabricApi.module("fabric-api-base", project.fabric_version)
+    //includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
+    //includeMod "fabric-api", fabricApi.module("fabric-screen-api-v1", project.fabric_version)
 }
 
 repositories {
+	maven {
+		name = 'legacy-fabric'
+		url = 'https://maven.legacyfabric.net/'
+	}
 	maven {
 		name = 'TerraformersMC'
 		url = 'https://maven.terraformersmc.com/'

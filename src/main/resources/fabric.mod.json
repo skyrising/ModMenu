@@ -20,10 +20,8 @@
     "issues": "https://github.com/TerraformersMC/ModMenu/issues"
   },
   "depends": {
-    "fabric-resource-loader-v0": "*",
-    "fabric-screen-api-v1": "*",
     "fabricloader": ">=0.11.1",
-    "minecraft": ">=1.16-"
+    "minecraft": "1.12.2"
   },
   "breaks" : {
     "fabric": "<0.30.0",
@@ -79,7 +77,8 @@
     "NotSteven",
     "Dolphin 2.1",
     "ENDERZOMBI102",
-    "anatom3000"
+    "anatom3000",
+    "skyrising"
   ],
   "description": "Adds a mod menu to view the list of mods you have installed.",
   "mixins": [

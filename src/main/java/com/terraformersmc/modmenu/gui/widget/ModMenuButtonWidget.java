@@ -7,7 +7,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 public class ModMenuButtonWidget extends ButtonWidget {
-	public ModMenuButtonWidget(int x, int y, int width, int height, Text text, Screen screen) {
-		super(x, y, width, height, text, button -> MinecraftClient.getInstance().openScreen(new ModsScreen(screen)));
+	public ModMenuButtonWidget(int id, int x, int y, int width, int height, Text text) {
+		super(id, x, y, width, height, text.toFormattedString());
 	}
 }

@@ -1,18 +1,18 @@
 package com.terraformersmc.modmenu.util.mod;
 
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.texture.TextureUtil;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class ModIconHandler {
 	private static final Logger LOGGER = LogManager.getLogger("Mod Menu | ModIconHandler");
@@ -31,7 +31,7 @@ public class ModIconHandler {
 				return cachedIcon;
 			}
 			try (InputStream inputStream = Files.newInputStream(path)) {
-				NativeImage image = NativeImage.read(Objects.requireNonNull(inputStream));
+				BufferedImage image = TextureUtil.readImage(inputStream);
 				Validate.validState(image.getHeight() == image.getWidth(), "Must be square icon");
 				NativeImageBackedTexture tex = new NativeImageBackedTexture(image);
 				cacheModIcon(path, tex);
@@ -43,12 +43,6 @@ public class ModIconHandler {
 				LOGGER.error("Invalid mod icon for icon source {}: {}", iconSource.getMetadata().getId(), iconPath, t);
 			}
 			return null;
-		}
-	}
-
-	public void close() {
-		for (NativeImageBackedTexture tex : modIconCache.values()) {
-			tex.close();
 		}
 	}
 

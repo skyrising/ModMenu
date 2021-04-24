@@ -1,23 +1,20 @@
 package com.terraformersmc.modmenu.config.option;
 
 import com.terraformersmc.modmenu.util.TranslationUtil;
-import net.minecraft.client.options.BooleanOption;
-import net.minecraft.client.options.GameOptions;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.client.resource.language.I18n;
 
-public class BooleanConfigOption extends BooleanOption {
+public class BooleanConfigOption implements ConfigOption {
 	private final String key, translationKey;
 	private final boolean defaultValue;
 
 	public BooleanConfigOption(String key, boolean defaultValue) {
-		super(key, ignored -> ConfigOptionStorage.getBoolean(key), (ignored, value) -> ConfigOptionStorage.setBoolean(key, value));
 		ConfigOptionStorage.setBoolean(key, defaultValue);
 		this.key = key;
 		this.translationKey = TranslationUtil.translationKeyOf("option", key);
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
@@ -35,8 +32,8 @@ public class BooleanConfigOption extends BooleanOption {
 	}
 
 	@Override
-	public Text getDisplayString(GameOptions options) {
-		return new TranslatableText(translationKey, new TranslatableText(translationKey + "." + ConfigOptionStorage.getBoolean(key)));
+	public String getDisplayString() {
+		return I18n.translate(translationKey, I18n.translate(translationKey + "." + ConfigOptionStorage.getBoolean(key)));
 	}
 
 	public boolean getDefaultValue() {
