@@ -26,6 +26,7 @@
   "modmenu.showingModsLibraries.1.1": "Showing %s mod and %s library",
   "modmenu.minecraft": "Minecraft",
   "modmenu.forge": "Forge",
+  "modmenu.liteloader": "LiteLoader",
   "modmenu.dropConfirm": "Do you want to copy the following mods into the mods directory?",
   "modmenu.dropSuccessful.line1": "Successfully copied mods",
   "modmenu.dropSuccessful.line2": "Restart game to load mods",
