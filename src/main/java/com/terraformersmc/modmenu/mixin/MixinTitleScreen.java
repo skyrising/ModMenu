@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TitleScreen.class)
 public class MixinTitleScreen extends Screen {
-	@ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;setSize(II)V"), index = 1)
+	@ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;setScreenBounds(II)V"), index = 1)
 	private int adjustRealmsHeight(int height) {
 		if (ModMenuConfig.MODIFY_TITLE_SCREEN.getValue() && ModMenuConfig.MODS_BUTTON_STYLE.getValue() == ModMenuConfig.ModsButtonStyle.CLASSIC) {
 			return height - 51;
@@ -42,7 +42,7 @@ public class MixinTitleScreen extends Screen {
 		}
 	}
 
-	@ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;drawStringWithShadow(Lnet/minecraft/client/font/TextRenderer;Ljava/lang/String;III)V", ordinal = 0))
+	@ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;drawWithShadow(Lnet/minecraft/client/font/TextRenderer;Ljava/lang/String;III)V", ordinal = 0))
 	private String onRender(String string) {
 		if (ModMenuConfig.MODIFY_TITLE_SCREEN.getValue() && ModMenuConfig.MOD_COUNT_LOCATION.getValue().isOnTitleScreen()) {
 			String count = ModMenu.getDisplayedModCount();
@@ -50,7 +50,7 @@ public class MixinTitleScreen extends Screen {
 			String countKey = "modmenu.mods." + count;
 			if ("69".equals(count) && ModMenuConfig.EASTER_EGGS.getValue()) {
 				newString = I18n.translate(countKey + ".nice", count);
-			} else if (I18n.hasTranslation(countKey)) {
+			} else if (I18n.method_12500(countKey)) {
 				newString = I18n.translate(countKey, count);
 			}
 			return string.replace(I18n.translate(I18n.translate("menu.modded")), newString);

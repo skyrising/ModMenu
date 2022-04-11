@@ -27,14 +27,14 @@ public class ParentEntry extends ModListEntry {
 	}
 
 	@Override
-	public void render(int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-		super.render(index, y, x, rowWidth, rowHeight, mouseX, mouseY, isSelected, delta);
+	public void method_6700(int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+		super.method_6700(index, y, x, rowWidth, rowHeight, mouseX, mouseY, isSelected, delta);
 		TextRenderer font = client.textRenderer;
-		int childrenBadgeHeight = font.lineHeight;
-		int childrenBadgeWidth = font.lineHeight;
+		int childrenBadgeHeight = font.fontHeight;
+		int childrenBadgeWidth = font.fontHeight;
 		int shownChildren = ModSearch.search(list.getParent(), list.getParent().getSearchInput(), getChildren()).size();
 		String str = shownChildren == children.size() ? String.valueOf(shownChildren) : shownChildren + "/" + children.size();
-		int childrenWidth = font.getWidth(str) - 1;
+		int childrenWidth = font.getStringWidth(str) - 1;
 		if (childrenBadgeWidth < childrenWidth + 4) {
 			childrenBadgeWidth = childrenWidth + 4;
 		}

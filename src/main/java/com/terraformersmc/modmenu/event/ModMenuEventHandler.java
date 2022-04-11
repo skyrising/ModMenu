@@ -62,7 +62,7 @@ public class ModMenuEventHandler {
 				} else if (ModMenuConfig.MODS_BUTTON_STYLE.getValue() == ModMenuConfig.ModsButtonStyle.SHRINK) {
 					buttons.add(modsButtonIndex, new ModMenuButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 + 2, buttonsY + spacing * 2, 98, 20, ModMenuApi.createModsButtonText()));
 				} else if (ModMenuConfig.MODS_BUTTON_STYLE.getValue() == ModMenuConfig.ModsButtonStyle.ICON) {
-					buttons.add(modsButtonIndex, new ModMenuTexturedButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 + 104, buttonsY + spacing * 2, 20, 20, 0, 0, FABRIC_ICON_BUTTON_LOCATION, 32, 64, ModMenuApi.createModsButtonText().toFormattedString()));
+					buttons.add(modsButtonIndex, new ModMenuTexturedButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 + 104, buttonsY + spacing * 2, 20, 20, 0, 0, FABRIC_ICON_BUTTON_LOCATION, 32, 64, ModMenuApi.createModsButtonText().asFormattedString()));
 				}
 			}
 		}
@@ -93,7 +93,7 @@ public class ModMenuEventHandler {
 				if (style == ModMenuConfig.ModsButtonStyle.CLASSIC) {
 					buttons.add(modsButtonIndex, new ModMenuButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 - 102, buttonsY + spacing * 3 - (spacing / 2), 204, 20, ModMenuApi.createModsButtonText()));
 				} else if (style == ModMenuConfig.ModsButtonStyle.ICON) {
-					buttons.add(modsButtonIndex, new ModMenuTexturedButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 + 4 + 100 + 2, screen.height / 4 + 72 + -16, 20, 20, 0, 0, FABRIC_ICON_BUTTON_LOCATION, 32, 64, ModMenuApi.createModsButtonText().toFormattedString()));
+					buttons.add(modsButtonIndex, new ModMenuTexturedButtonWidget(MOD_MENU_BUTTON_ID, screen.width / 2 + 4 + 100 + 2, screen.height / 4 + 72 + -16, 20, 20, 0, 0, FABRIC_ICON_BUTTON_LOCATION, 32, 64, ModMenuApi.createModsButtonText().asFormattedString()));
 				}
 			}
 		}

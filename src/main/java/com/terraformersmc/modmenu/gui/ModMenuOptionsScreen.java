@@ -4,16 +4,12 @@ import com.terraformersmc.modmenu.config.ModMenuConfig;
 import com.terraformersmc.modmenu.config.ModMenuConfigManager;
 import com.terraformersmc.modmenu.config.option.BooleanConfigOption;
 import com.terraformersmc.modmenu.config.option.ConfigOption;
-import com.terraformersmc.modmenu.config.option.ConfigOptionStorage;
 import com.terraformersmc.modmenu.config.option.EnumConfigOption;
-import net.minecraft.class_4247;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.OptionButtonWidget;
-import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.resource.language.I18n;
 
-import java.util.List;
 
 public class ModMenuOptionsScreen extends Screen {
 	private Screen previous;
@@ -34,12 +30,12 @@ public class ModMenuOptionsScreen extends Screen {
 	}
 
 	@Override
-	protected void charTyped(char c, int i) {
+	protected void keyPressed(char c, int i) {
 		if (i == 1) {
 			ModMenuConfigManager.save();
 		}
 
-		super.charTyped(c, i);
+		super.keyPressed(c, i);
 	}
 
 	@Override

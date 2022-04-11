@@ -10,14 +10,14 @@ import com.terraformersmc.modmenu.util.mod.ModBadgeRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ModListEntry implements AlwaysSelectedEntryListWidget.Entry {
+public class ModListEntry implements EntryListWidget.Entry {
 	public static final Identifier UNKNOWN_ICON = new Identifier("textures/misc/unknown_pack.png");
 	private static final Logger LOGGER = LogManager.getLogger();
 
@@ -35,12 +35,12 @@ public class ModListEntry implements AlwaysSelectedEntryListWidget.Entry {
 	}
 
 	@Override
-	public void method_29159(int i, int j, int y, float delta) {
+	public void method_9473(int i, int j, int k, float f) {
 
 	}
 
 	@Override
-	public void render(int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+	public void method_6700(int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
 		x += getXOffset();
 		rowWidth -= getXOffset();
 		int iconSize = ModMenuConfig.COMPACT_LIST.getValue() ? COMPACT_ICON_SIZE : FULL_ICON_SIZE;
@@ -55,26 +55,26 @@ public class ModListEntry implements AlwaysSelectedEntryListWidget.Entry {
 		String trimmedName = mod.getName();
 		int maxNameWidth = rowWidth - iconSize - 3;
 		TextRenderer font = this.client.textRenderer;
-		if (font.getWidth(trimmedName) > maxNameWidth) {
+		if (font.getStringWidth(trimmedName) > maxNameWidth) {
 			String ellipsis = "...";
-			trimmedName = font.trimToWidth(trimmedName, maxNameWidth - font.getWidth(ellipsis)) + ellipsis;
+			trimmedName = font.trimToWidth(trimmedName, maxNameWidth - font.getStringWidth(ellipsis)) + ellipsis;
 		}
 		font.draw(trimmedName, x + iconSize + 3, y + 1, 0xFFFFFF);
 		if (!ModMenuConfig.HIDE_BADGES.getValue()) {
-			new ModBadgeRenderer(x + iconSize + 3 + font.getWidth(trimmedName) + 2, y, x + rowWidth, mod, list.getParent()).draw(mouseX, mouseY);
+			new ModBadgeRenderer(x + iconSize + 3 + font.getStringWidth(trimmedName) + 2, y, x + rowWidth, mod, list.getParent()).draw(mouseX, mouseY);
 		}
 		if (!ModMenuConfig.COMPACT_LIST.getValue()) {
 			String summary = mod.getSummary();
 			String translatableSummaryKey = "modmenu.summaryTranslation." + mod.getId();
 			String translatableDescriptionKey = "modmenu.descriptionTranslation." + mod.getId();
-			if (I18n.hasTranslation(translatableSummaryKey)) {
+			if (I18n.method_12500(translatableSummaryKey)) {
 				summary = I18n.translate(translatableSummaryKey);
-			} else if (I18n.hasTranslation(translatableDescriptionKey)) {
+			} else if (I18n.method_12500(translatableDescriptionKey)) {
 				summary = I18n.translate(translatableDescriptionKey);
 			}
-			DrawingUtil.drawWrappedString(summary, (x + iconSize + 3 + 4), (y + client.textRenderer.lineHeight + 2), rowWidth - iconSize - 7, 2, 0x808080);
+			DrawingUtil.drawWrappedString(summary, (x + iconSize + 3 + 4), (y + client.textRenderer.fontHeight + 2), rowWidth - iconSize - 7, 2, 0x808080);
 		} else {
-			DrawingUtil.drawWrappedString("v" + mod.getVersion(), (x + iconSize + 3), (y + client.textRenderer.lineHeight + 2), rowWidth - iconSize - 7, 2, 0x808080);
+			DrawingUtil.drawWrappedString("v" + mod.getVersion(), (x + iconSize + 3), (y + client.textRenderer.fontHeight + 2), rowWidth - iconSize - 7, 2, 0x808080);
 		}
 	}
 
@@ -98,7 +98,7 @@ public class ModListEntry implements AlwaysSelectedEntryListWidget.Entry {
 			this.iconLocation = new Identifier(ModMenu.MOD_ID, mod.getId() + "_icon");
 			NativeImageBackedTexture icon = mod.getIcon(list.getIconHandler(), 64 * MinecraftClient.getInstance().options.guiScale);
 			if (icon != null) {
-				this.client.getTextureManager().registerTexture(this.iconLocation, icon);
+				this.client.getTextureManager().loadTexture(this.iconLocation, icon);
 			} else {
 				this.iconLocation = UNKNOWN_ICON;
 			}

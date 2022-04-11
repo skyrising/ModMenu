@@ -31,7 +31,7 @@ public class ModIconHandler {
 				return cachedIcon;
 			}
 			try (InputStream inputStream = Files.newInputStream(path)) {
-				BufferedImage image = TextureUtil.readImage(inputStream);
+				BufferedImage image = TextureUtil.create(inputStream);
 				Validate.validState(image.getHeight() == image.getWidth(), "Must be square icon");
 				NativeImageBackedTexture tex = new NativeImageBackedTexture(image);
 				cacheModIcon(path, tex);

@@ -11,7 +11,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ConfirmChatLinkScreen;
 import net.minecraft.client.gui.screen.CreditsScreen;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
+public class DescriptionListWidget extends EntryListWidget {
 	private final List<DescriptionEntry> entries = new ArrayList<>();
 
 	private final ModsScreen parent;
@@ -47,20 +47,20 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 	}
 
 	public int getRowLeft() {
-		return this.left + this.width / 2 - this.getRowWidth() / 2 + 2;
+		return this.xStart + this.width / 2 - this.getRowWidth() / 2 + 2;
 	}
 
 	@Override
-	protected int getScrollbarPositionX() {
-		return this.width - 6 + left;
+	protected int getScrollbarPosition() {
+		return this.width - 6 + xStart;
 	}
 
 	public boolean isMouseOver(int mouseX, int mouseY) {
-		return mouseY >= this.top && mouseY <= this.bottom && getRowLeft() <= mouseX && getRowLeft() + getRowWidth() > mouseX;
+		return mouseY >= this.yStart && mouseY <= this.yEnd && getRowLeft() <= mouseX && getRowLeft() + getRowWidth() > mouseX;
 	}
 
 	@Override
-	protected int getItemCount() {
+	protected int getEntryCount() {
 		return entries.size();
 	}
 
@@ -68,7 +68,7 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 	public void render(int mouseX, int mouseY, float delta) {
 		lastMouseX = mouseX;
 		lastMouseY = mouseY;
-		this.clampScrollAmount();
+		this.capYPosition();
 		ModListEntry selectedEntry = parent.getSelectedEntry();
 		if (selectedEntry != lastSelected) {
 			lastSelected = selectedEntry;
@@ -78,11 +78,11 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 				Mod mod = lastSelected.getMod();
 				String description = mod.getDescription();
 				String translatableDescriptionKey = "modmenu.descriptionTranslation." + mod.getId();
-				if (I18n.hasTranslation(translatableDescriptionKey)) {
+				if (I18n.method_12500(translatableDescriptionKey)) {
 					description = I18n.translate(translatableDescriptionKey);
 				}
 				if (!description.isEmpty()) {
-					for (String line : textRenderer.wrapStringToWidthAsList(description.replaceAll("\n", "\n\n"), getRowWidth() - 5)) {
+					for (String line : textRenderer.wrapLines(description.replaceAll("\n", "\n\n"), getRowWidth() - 5)) {
 						entries.add(new DescriptionEntry(line, this));
 					}
 				}
@@ -140,32 +140,32 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 		GlStateManager.depthFunc(GL11.GL_LEQUAL);
 		GlStateManager.disableDepthTest();
 		GlStateManager.enableBlend();
-		GlStateManager.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ZERO, GlStateManager.DstFactor.ONE);
+		GlStateManager.method_12288(GlStateManager.class_2870.field_13525, GlStateManager.class_2866.field_13480, GlStateManager.class_2870.field_13528, GlStateManager.class_2866.field_13475);
 		GlStateManager.disableAlphaTest();
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
 		bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
-		bufferBuilder.vertex(this.left, (this.top + 4), 0.0D).color(0, 0, 0, 0).next();
-		bufferBuilder.vertex(this.right, (this.top + 4), 0.0D).color(0, 0, 0, 0).next();
-		bufferBuilder.vertex(this.right, this.top, 0.0D).color(0, 0, 0, 255).next();
-		bufferBuilder.vertex(this.left, this.top, 0.0D).color(0, 0, 0, 255).next();
-		bufferBuilder.vertex(this.left, this.bottom, 0.0D).color(0, 0, 0, 255).next();
-		bufferBuilder.vertex(this.right, this.bottom, 0.0D).color(0, 0, 0, 255).next();
-		bufferBuilder.vertex(this.right, (this.bottom - 4), 0.0D).color(0, 0, 0, 0).next();
-		bufferBuilder.vertex(this.left, (this.bottom - 4), 0.0D).color(0, 0, 0, 0).next();
+		bufferBuilder.vertex(this.xStart, (this.yStart + 4), 0.0D).color(0, 0, 0, 0).next();
+		bufferBuilder.vertex(this.xEnd, (this.yStart + 4), 0.0D).color(0, 0, 0, 0).next();
+		bufferBuilder.vertex(this.xEnd, this.yStart, 0.0D).color(0, 0, 0, 255).next();
+		bufferBuilder.vertex(this.xStart, this.yStart, 0.0D).color(0, 0, 0, 255).next();
+		bufferBuilder.vertex(this.xStart, this.yEnd, 0.0D).color(0, 0, 0, 255).next();
+		bufferBuilder.vertex(this.xEnd, this.yEnd, 0.0D).color(0, 0, 0, 255).next();
+		bufferBuilder.vertex(this.xEnd, (this.yEnd - 4), 0.0D).color(0, 0, 0, 0).next();
+		bufferBuilder.vertex(this.xStart, (this.yEnd - 4), 0.0D).color(0, 0, 0, 0).next();
 		tessellator.draw();
 
 		bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
-		bufferBuilder.vertex(this.left, this.bottom, 0.0D).color(0, 0, 0, 128).next();
-		bufferBuilder.vertex(this.right, this.bottom, 0.0D).color(0, 0, 0, 128).next();
-		bufferBuilder.vertex(this.right, this.top, 0.0D).color(0, 0, 0, 128).next();
-		bufferBuilder.vertex(this.left, this.top, 0.0D).color(0, 0, 0, 128).next();
+		bufferBuilder.vertex(this.xStart, this.yEnd, 0.0D).color(0, 0, 0, 128).next();
+		bufferBuilder.vertex(this.xEnd, this.yEnd, 0.0D).color(0, 0, 0, 128).next();
+		bufferBuilder.vertex(this.xEnd, this.yStart, 0.0D).color(0, 0, 0, 128).next();
+		bufferBuilder.vertex(this.xStart, this.yStart, 0.0D).color(0, 0, 0, 128).next();
 		tessellator.draw();
 
 		int k = this.getRowLeft();
-		int l = this.top + 4 - this.getScrollAmount();
+		int l = this.yStart + 4 - this.getScrollAmount();
 		GlStateManager.enableTexture();
-		this.renderList(k, l, mouseX, mouseY, delta);
+		this.method_6704(k, l, mouseX, mouseY, delta);
 		this.renderScrollBar(bufferBuilder, tessellator);
 
 		GlStateManager.enableTexture();
@@ -175,22 +175,22 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 	}
 
 	public void renderScrollBar(BufferBuilder bufferBuilder, Tessellator tessellator) {
-		int scrollbarStartX = this.getScrollbarPositionX();
+		int scrollbarStartX = this.getScrollbarPosition();
 		int scrollbarEndX = scrollbarStartX + 6;
 		int maxScroll = this.getMaxScroll();
 		if (maxScroll > 0) {
-			int p = (this.bottom - this.top) * (this.bottom - this.top) / this.getMaxPosition();
-			p = MathHelper.clamp(p, 32, this.bottom - this.top - 8);
-			int q = (int)this.scrollAmount * (this.bottom - this.top - p) / maxScroll + this.top;
-			if (q < this.top) {
-				q = this.top;
+			int p = (this.yEnd - this.yStart) * (this.yEnd - this.yStart) / this.getMaxPosition();
+			p = MathHelper.clamp(p, 32, this.yEnd - this.yStart - 8);
+			int q = (int)this.scrollAmount * (this.yEnd - this.yStart - p) / maxScroll + this.yStart;
+			if (q < this.yStart) {
+				q = this.yStart;
 			}
 
 			bufferBuilder.begin(7, VertexFormats.POSITION_COLOR);
-			bufferBuilder.vertex(scrollbarStartX, this.bottom, 0.0).color(0, 0, 0, 255).next();
-			bufferBuilder.vertex(scrollbarEndX, this.bottom, 0.0).color(0, 0, 0, 255).next();
-			bufferBuilder.vertex(scrollbarEndX, this.top, 0.0).color(0, 0, 0, 255).next();
-			bufferBuilder.vertex(scrollbarStartX, this.top, 0.0).color(0, 0, 0, 255).next();
+			bufferBuilder.vertex(scrollbarStartX, this.yEnd, 0.0).color(0, 0, 0, 255).next();
+			bufferBuilder.vertex(scrollbarEndX, this.yEnd, 0.0).color(0, 0, 0, 255).next();
+			bufferBuilder.vertex(scrollbarEndX, this.yStart, 0.0).color(0, 0, 0, 255).next();
+			bufferBuilder.vertex(scrollbarStartX, this.yStart, 0.0).color(0, 0, 0, 255).next();
 			bufferBuilder.vertex(scrollbarStartX, q + p, 0.0).color(128, 128, 128, 255).next();
 			bufferBuilder.vertex(scrollbarEndX, q + p, 0.0).color(128, 128, 128, 255).next();
 			bufferBuilder.vertex(scrollbarEndX, q, 0.0).color(128, 128, 128, 255).next();
@@ -218,13 +218,13 @@ public class DescriptionListWidget extends AlwaysSelectedEntryListWidget {
 		}
 
 		@Override
-		public void method_29159(int i, int j, int y, float delta) {
+		public void method_9473(int i, int j, int y, float delta) {
 
 		}
 
 		@Override
-		public void render(int index, int x, int y, int itemWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-			if (widget.top > y || widget.bottom - textRenderer.lineHeight < y) {
+		public void method_6700(int index, int x, int y, int itemWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+			if (widget.yStart > y || widget.yStart - textRenderer.fontHeight < y) {
 				return;
 			}
 			textRenderer.drawWithShadow(text, x, y, 0xAAAAAA);

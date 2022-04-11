@@ -1,27 +1,56 @@
 plugins {
-	id 'fabric-loom' version '0.5-SNAPSHOT'
+	id 'org.quiltmc.loom' version '0.12.15'
+	id 'maven-publish'
 }
 
-apply from: 'https://raw.githubusercontent.com/TerraformersMC/GradleScripts/2.0/ferry.gradle'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
+archivesBaseName = project.archive_name
+group = project.maven_group
 
-minecraft {
-	intermediaryUrl = { version ->
-		return "https://maven.legacyfabric.net/net/fabricmc/intermediary/${version}/intermediary-${version}-v2.jar";
-	}
+version = getVersion()
+
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
 }
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	classifier = "sources"
+	from sourceSets.main.allSource
+}
+
+jar {
+	from "LICENSE"
+}
+
+loom {
+	setIntermediaryUrl('https://maven.legacyfabric.net/net/fabricmc/intermediary/%1$s/intermediary-%1$s-v2.jar')
+	customMinecraftManifest.set("https://meta.legacyfabric.net/v2/manifest/${minecraft_version}")
+}
+
+if (version.startsWith("v")) version = version.substring(1)
 
 dependencies {
 	minecraft "com.mojang:minecraft:$project.minecraft_version"
 	mappings "net.fabricmc:yarn:$project.yarn_mappings:v2"
 
-	mod "fabric-loader", "net.fabricmc:fabric-loader:$project.loader_version"
+	modImplementation "net.fabricmc:fabric-loader:$project.loader_version"
     //includeMod "fabric-api", fabricApi.module("fabric-api-base", project.fabric_version)
     //includeMod "fabric-api", fabricApi.module("fabric-resource-loader-v0", project.fabric_version)
     //includeMod "fabric-api", fabricApi.module("fabric-screen-api-v1", project.fabric_version)
 }
 
 repositories {
+	mavenLocal()
+	mavenCentral()
+	maven {
+		url = 'https://libraries.minecraft.net/'
+	}
+	maven {
+		name = 'Fabric'
+		url = 'https://maven.fabricmc.net/'
+	}
 	maven {
 		name = 'legacy-fabric'
 		url = 'https://maven.legacyfabric.net/'
@@ -30,4 +59,54 @@ repositories {
 		name = 'TerraformersMC'
 		url = 'https://maven.terraformersmc.com/'
 	}
+}
+
+java {
+	withSourcesJar()
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+}
+
+String getVersion() {
+	def version = "unknown"
+	if (project.hasProperty("currentTag")) {
+		return project.currentTag.replace("v", "")
+	}
+	def branchLines = "git branch --show-current".execute().in.readLines()
+	if (!branchLines.isEmpty()) {
+		version = branchLines.get(0)
+	}
+
+	def tagLines = "git describe --tags --exact-match --abbrev=0".execute().in.readLines()
+	def release = false
+	if (!tagLines.isEmpty()) {
+		def line = tagLines.get(0)
+		def regex = /v([0-9].[0-9].[0-9])/
+		if (line.matches(regex)) {
+			version = (line =~ regex)[0][1] // gets 1st match group of 1st match
+			release = true
+		}
+	}
+	if (!release) {
+		def lastTag = "git describe --tags --abbrev=0".execute().in.readLines()
+		def lastCommit = "git rev-parse --short HEAD".execute().in.readLines()
+		if (!lastTag.isEmpty() && !lastCommit.isEmpty()) {
+			version = lastTag.get(0) + "+" + version + "." + lastCommit.get(0)
+		}
+	}
+	return version
 }

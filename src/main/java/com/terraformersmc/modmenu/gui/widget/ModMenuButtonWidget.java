@@ -8,6 +8,6 @@ import net.minecraft.text.Text;
 
 public class ModMenuButtonWidget extends ButtonWidget {
 	public ModMenuButtonWidget(int id, int x, int y, int width, int height, Text text) {
-		super(id, x, y, width, height, text.toFormattedString());
+		super(id, x, y, width, height, text.asFormattedString());
 	}
 }

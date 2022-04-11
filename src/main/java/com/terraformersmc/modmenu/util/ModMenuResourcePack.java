@@ -1,12 +1,11 @@
 package com.terraformersmc.modmenu.util;
 
 import com.google.gson.*;
-import net.fabricmc.loader.util.FileSystemUtil;
-import net.minecraft.class_6055;
-import net.minecraft.class_6057;
+import net.minecraft.client.resource.ResourceMetadataProvider;
 import net.minecraft.client.texture.TextureUtil;
 import net.minecraft.resource.ResourcePack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.MetadataSerializer;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +26,7 @@ public class ModMenuResourcePack implements ResourcePack {
 	}
 
 	private Path getPath(Identifier id) {
-		return root.resolve(Paths.get("assets", id.getNamespace(), id.getPath()));
+		return root.resolve("assets").resolve(id.getNamespace()).resolve(id.getPath());
 	}
 
 	private Path getPath(String file) {
@@ -73,7 +71,7 @@ public class ModMenuResourcePack implements ResourcePack {
 	}
 
 	@Override
-	public Set<String> method_31465() {
+	public Set<String> getNamespaces() {
 		try {
 			return Files.list(getPath("assets")).filter(Files::isDirectory)
 					.map(Path::getFileName)
@@ -87,7 +85,7 @@ public class ModMenuResourcePack implements ResourcePack {
 
 	@Nullable
 	@Override
-	public <T extends class_6055> T method_31461(class_6057 parser, String section) throws IOException {
+	public <T extends ResourceMetadataProvider> T parseMetadata(MetadataSerializer parser, String section) throws IOException {
 		try {
 			return parseJson(parser, this.openFile("pack.mcmeta"), section);
 		} catch (NoSuchFileException e) {
@@ -95,12 +93,12 @@ public class ModMenuResourcePack implements ResourcePack {
 		}
 	}
 
-	static <T extends class_6055> T parseJson(class_6057 parser, InputStream inputStream, String section) {
+	static <T extends ResourceMetadataProvider> T parseJson(MetadataSerializer parser, InputStream inputStream, String section) {
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 			JsonObject jsonObject = (new JsonParser()).parse(bufferedReader).getAsJsonObject();
-			return parser.method_31530(section, jsonObject);
+			return parser.fromJson(section, jsonObject);
 		} catch (RuntimeException var9) {
 			throw new JsonParseException(var9);
 		} finally {
@@ -109,8 +107,8 @@ public class ModMenuResourcePack implements ResourcePack {
 	}
 
 	@Override
-	public BufferedImage method_31460() throws IOException {
-		return TextureUtil.readImage(this.openFile("pack.png"));
+	public BufferedImage getIcon() throws IOException {
+		return TextureUtil.create(this.openFile("pack.png"));
 	}
 
 	@Override

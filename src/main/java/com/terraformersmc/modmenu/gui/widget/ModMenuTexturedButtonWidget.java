@@ -31,7 +31,7 @@ public class ModMenuTexturedButtonWidget extends ButtonWidget {
 	}
 
 	@Override
-	public void render(MinecraftClient client, int mouseX, int mouseY, float delta) {
+	public void method_891(MinecraftClient client, int mouseX, int mouseY, float delta) {
 		this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 		client.getTextureManager().bindTexture(this.texture);
 		GlStateManager.color4f(1, 1, 1, 1f);

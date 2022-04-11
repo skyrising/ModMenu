@@ -45,7 +45,7 @@ public class TranslationUtil {
 				}
 			}
 			lastKey = fullKey.toString();
-			if (I18n.hasTranslation(lastKey)) {
+			if (I18n.method_12500(lastKey)) {
 				return new TranslatableText(lastKey, realArgs);
 			}
 		}

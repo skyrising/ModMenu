@@ -41,11 +41,11 @@ public class ModBadgeRenderer {
 	}
 
 	public void drawBadge(Mod.Badge badge, int mouseX, int mouseY) {
-		this.drawBadge(badge.getText().toFormattedString(), badge.getOutlineColor(), badge.getFillColor(), mouseX, mouseY);
+		this.drawBadge(badge.getText().asFormattedString(), badge.getOutlineColor(), badge.getFillColor(), mouseX, mouseY);
 	}
 
 	public void drawBadge(String text, int outlineColor, int fillColor, int mouseX, int mouseY) {
-		int width = client.textRenderer.getWidth(text) + 6;
+		int width = client.textRenderer.getStringWidth(text) + 6;
 		if (badgeX + width < badgeMax) {
 			DrawingUtil.drawBadge(badgeX, badgeY, width, text, outlineColor, fillColor, 0xCACACA);
 			badgeX += width + 3;
