@@ -224,7 +224,7 @@ public class DescriptionListWidget extends EntryListWidget {
 
 		@Override
 		public void method_6700(int index, int x, int y, int itemWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-			if (widget.yStart > y || widget.yStart - textRenderer.fontHeight < y) {
+			if (widget.yStart > y || widget.yEnd - textRenderer.fontHeight < y) {
 				return;
 			}
 			textRenderer.drawWithShadow(text, x, y, 0xAAAAAA);
